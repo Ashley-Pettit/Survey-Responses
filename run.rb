@@ -1,12 +1,17 @@
+require_relative 'lib/parse_csv'
+require_relative 'lib/results'
+
+#The run file is here simply to run the file and to handle all I/O
+
 class Run
 
   def initialize
-    @parseCSV = ParseCSV.new
-    @results = Results.new(@parseCSV)
-    greeting
-    loop do
-      input
-    end
+    parse = ParseCSV.new
+    # @results = Results.new(@parseCSV)
+    # greeting
+    # loop do
+    #   input
+    # end
   end
 
   def greeting
@@ -31,16 +36,12 @@ class Run
     end
   end
 
-  def find_matching_results
-    find_matching_results == user_input.gsub('.csv', '-responses.csv')
-  end
-
   def help
 
   end
 
   def error_message
-    puts "Sorry that command was not understood."
+    puts "Sorry that command was not understood or the file is not a valid .csv file."
     puts "Please type 'help' if you need assistance or 'quit' to end the program."
   end
 
@@ -48,5 +49,6 @@ class Run
     exit
   end
 
-
 end
+
+run = Run.new
