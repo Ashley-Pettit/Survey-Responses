@@ -35,7 +35,7 @@ The output should include:
 
 1. The participation percentage and total participant counts of the survey.
 - Any response with a 'submitted_at' date has submitted and is said to have participated in the survey.
-2. The average for each rating question results from .Unsubmitted surveys should not be considered in the output. 
+2. The average for each rating question results from unsubmitted surveys should not be considered in the output.
 
 ## Other information
 
