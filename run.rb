@@ -1,11 +1,12 @@
 require_relative 'lib/application.rb'
+require 'pry'
 
-#The run file is here simply to run the file and to handle all I/O
 class Run
 
   def initialize
+    @VALID_COMMANDS = ["PARSE", "HELP", "QUIT", "DEMO"]
+    @SUPPORTED_FILE_TYPES = [".csv"]
     @application = Application.new
-    @test_file_location = "example-data/survey-1.csv"
     greeting
     loop do
       input
@@ -13,42 +14,63 @@ class Run
   end
 
   def input
-    puts "Please enter the location of the survey questions file or another relevant command."
-    user_input = gets.chomp.downcase
-    if @application.valid_file?(user_input)
-      @application.parse(user_input)
-    elsif user_input == 'test'
-      @application.parse(@test_file_location)
-    elsif user_input == 'quit'
+    puts "Please enter one of the following commands #{@VALID_COMMANDS}"
+    user_input = gets.chomp.upcase
+    if user_input == 'PARSE'
+      file_entry
+    elsif user_input == 'QUIT'
       quit
-    elsif user_input == 'help'
+    elsif user_input == 'HELP'
       help
+    elsif user_input == 'DEMO'
+      demo
     else
       error_message
     end
   end
 
-  def greeting
-    puts "Ready to parse and display survey data."
-    puts "Please enter the location of the survey questions csv file preceeded by the word Parse"
-    puts "E.g. Parse 'example-data/survey-1.csv'."
-    puts "This will find the file, automatically find it's matching responses file, parse it, display the results."
-    puts "For more guideance please type 'test', help' or to quit just type 'quit'."
+  def file_entry
+    puts "Please enter the location of the survey questions file"
+    questions_file = gets.chomp.downcase
+    puts "Please enter the location of the survey answers file"
+    answers_file = gets.chomp.downcase
+    if valid_file?(questions_file) && @application.valid_file?(answers_file)
+      puts "Okay great both are valid .csv files"
+      @application.parse(questions_file, answers_file)
+    else
+      puts "Sorry one of the files entered is not a supported filetype. We presently support #{@SUPPORTED_FILE_TYPES}"
+    end
   end
 
+  def demo
+    puts "Loading demo survey questions and results"
+    questions_file = "example-data/survey-1.csv"
+    answers_file = "example-data/survey-1-responses.csv"
+    @application.parse(questions_file, answers_file)
+  end
+
+  def valid_file?(file)
+    #Need better validation of csv here
+    file.include?('.csv')
+  end
 
   def help
-    puts "Put some helpful help here."
+    puts "Remember valid commands are #{@VALID_COMMANDS}. Presently only .csv is supported."
+    puts "Issues may airse when incorrect filestypes are attempted to be loaded."
   end
 
   def error_message
-    puts "Sorry that command was not understood or the file is not a valid .csv file."
-    puts "Please type 'help' if you need assistance or 'quit' to end the program."
+    puts "Sorry that command was not understood."
+    puts "Please type 'HELP' if you need assistance."
   end
 
   def quit
     puts "Quitting application..."
     exit
+  end
+
+  def greeting
+    puts "Welcome to CultureAmps amazing reporting system"
   end
 
 end
