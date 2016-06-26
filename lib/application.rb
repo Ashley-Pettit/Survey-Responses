@@ -1,93 +1,81 @@
-require "csv"
+require_relative 'response'
+require_relative 'survey'
 
 class Application
 
-  def parse(questions_file, answers_file)
-    @questions_file = questions_file
-    @answers_file = answers_file
-    @total_invitations = total_invitations(@questions_file)
-    @total_participants = total_participants(@answers_file)
-    read_questions
-    read_answers
-    print_participation
-  end
+  VALID_COMMANDS = ["PARSE", "HELP", "QUIT", "DEMO"]
+  SUPPORTED_FILE_TYPES = [".csv"]
 
-  def print_participation
-    puts "Here are your results of your culture survey"
-    puts "#{@total_participants} people out of #{@total_invitations} completed the survey. A completition rate of %#{participation_percentage}"
-  end
-
-  def read_questions
-    # # header => theme,type,text
-    @questions_csv = CSV.read(@questions_file, headers:true)
-    @themes = []
-    @question_types = []
-    @questions = []
-    @questions_csv.each do |row|
-      @themes << row[0]
-      @question_types << row[1]
-      @questions << row[2]
+  def initialize
+    greeting
+    loop do
+      input
     end
   end
 
-  def read_answers
-    @answers_csv = CSV.read(@answers_file)
-    @employee_emails = []
-    @employee_ids = []
-    @submittion_times = []
-    @answers = []
-    @answers_csv.each do |row|
-      if survey_completed?(row)
-        @employee_emails << row[0]
-        @employee_ids << row[1]
-        @submittion_times << row[2]
-      end
+  def input
+    puts "Please enter one of the following commands #{VALID_COMMANDS}"
+    user_input = gets.chomp.upcase
+    if user_input == 'PARSE'
+      parse_input
+    elsif user_input == 'QUIT'
+      quit
+    elsif user_input == 'HELP'
+      help
+    elsif user_input == 'DEMO'
+      demo
+    else
+      error_message
     end
   end
 
-
-  def print_participation
-    puts "Here are your results of your culture survey"
-    puts "#{@total_participants} people out of #{@total_invitations} completed the survey. A completition rate of #{participation_percentage}%"
-    puts "You asked questions around #{@themes.uniq}. Let's see how it went."
-    puts "Let's look at the question \"#{@questions[0]}\""
-    puts "This was a #{@question_types[0]} style of quesiton."
-    puts "For this question the average score out of 5 was X."
-  end
-
-  def total_invitations(answers_file)
-    invitation_count = 0
-    CSV.foreach(answers_file) do |row|
-      invitation_count += 1
+  def parse_input
+    puts "Please enter the location of the survey questions file"
+    questions_file = gets.chomp.downcase
+    puts "Please enter the location of the survey answers file"
+    answers_file = gets.chomp.downcase
+    if valid_file?(questions_file) && valid_file?(answers_file)
+      puts "Okay great both are valid .csv files"
+      @survey = Survey.new(questions_file)
+      # @response = Response.new(answers_file)
+    else
+      puts "Sorry one of the files entered is not a supported filetype. We presently support #{SUPPORTED_FILE_TYPES}"
     end
-    return invitation_count
+
   end
 
-  def total_participants(answers_file)
-    participant_count = 0
-    CSV.foreach(answers_file) do |row|
-      if survey_completed?(row)
-        participant_count += 1
-      end
-    end
-    return participant_count
+  def demo
+    puts "Loading demo survey questions and results"
+    questions_file = "../example-data/survey-1.csv"
+    answers_file = "../example-data/survey-1-responses.csv"
+    # @application.parse(questions_file, answers_file)
+    Survey.new(questions_file, answers_file)
   end
 
-  def survey_completed?(result)
-    !result[2].nil?
+  def valid_file?(file)
+    #Need better validation of csv here
+    file.include?('.csv')
   end
 
-  def participation_percentage
-    (@total_participants.to_f / @total_invitations.to_f) * 100
+  def help
+    puts "Remember valid commands are #{@VALID_COMMANDS}. Presently only .csv is supported."
+    puts "Issues may airse when incorrect filestypes are attempted to be loaded."
   end
 
-  # row[0] => Email
-  # row[1] => Employee Id
-  # row[2] => Submitted At Timestamp (if there is no submitted at timestamp, you can assume the user did not submit a survey)
-  # row[3..row.count] => Each column from the fourth onwards are responses to survey questions.
-      # * Answers to Rating Questions are always an integer between (and including) 1 and 5.
-      # * Blank answers represent not answered.
-      # * Answers to Single Select Questions can be any string.
+  def error_message
+    puts "Sorry that command was not understood."
+    puts "Please type 'HELP' if you need assistance."
+  end
 
+  def quit
+    puts "Quitting application..."
+    exit
+  end
+
+  def greeting
+    puts "Welcome to CultureAmps amazing reporting system"
+  end
 
 end
+
+run = Application.new
